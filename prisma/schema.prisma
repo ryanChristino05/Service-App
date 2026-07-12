@@ -1,129 +1,205 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-}
-
-model Annonce {
-  id                 Int                  @id @default(autoincrement())
-  demandeur_id       Int
-  categorie_id       Int
-  localisation_id    Int?
-  titre              String               @db.VarChar
-  description        String?
-  statut             AnnonceStatus?       @default(ACTIVE)
-  date_creation      DateTime?            @default(now()) @db.Timestamp(6)
-  date_expiration    DateTime?            @db.Timestamp(6)
-  Categorie          Categorie            @relation(fields: [categorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users              users                @relation(fields: [demandeur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  Localisation       Localisation?        @relation(fields: [localisation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  PropositionAnnonce PropositionAnnonce[]
-}
-
-model Categorie {
-  id          Int       @id @default(autoincrement())
-  nom         String    @db.VarChar
-  description String?
-  icone       String?   @db.VarChar
-  Annonce     Annonce[]
-  Service     Service[]
-}
-
-model Feedback {
-  id            Int       @id @default(autoincrement())
-  service_id    Int
-  auteur_id     Int
-  note          Int?
-  commentaire   String?
-  date_creation DateTime? @default(now()) @db.Timestamp(6)
-  users         users     @relation(fields: [auteur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  Service       Service   @relation(fields: [service_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@unique([service_id, auteur_id], map: "unique_feedback")
+  provider = "mysql"
 }
 
 model Localisation {
-  id        Int       @id @default(autoincrement())
-  latitude  Decimal?  @db.Decimal
-  longitude Decimal?  @db.Decimal
-  ville     String?   @db.VarChar
-  quartier  String?   @db.VarChar
-  adresse   String?   @db.VarChar
-  Annonce   Annonce[]
-  Service   Service[]
-  users     users[]
+  id Int @id @default(autoincrement())
+
+  latitude  Decimal @db.Decimal(10, 8)
+  longitude Decimal @db.Decimal(11, 8)
+
+  ville    String  @db.VarChar(191)
+  quartier String? @db.VarChar(191)
+  adresse  String? @db.VarChar(191)
+
+  annonces Annonce[]
+  services Service[]
+  users    User[]
+
+  @@map("localisation")
 }
 
-model Notification {
-  id            Int               @id @default(autoincrement())
-  user_id       Int
-  type          NotificationType?
-  titre         String?           @db.VarChar
-  contenu       String?
-  vu            Boolean?          @default(false)
-  date_creation DateTime?         @default(now()) @db.Timestamp(6)
-  users         users             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-}
+model User {
+  id Int @id @default(autoincrement())
 
-model PropositionAnnonce {
-  id             Int                @id @default(autoincrement())
-  annonce_id     Int
-  utilisateur_id Int
-  message        String?
-  statut         PropositionStatus? @default(EN_ATTENTE)
-  date_creation  DateTime?          @default(now()) @db.Timestamp(6)
-  Annonce        Annonce            @relation(fields: [annonce_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users          users              @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  nom    String  @db.VarChar(191)
+  prenom String? @db.VarChar(191)
+
+  email        String @unique @db.VarChar(191)
+  mot_de_passe String @db.VarChar(255)
+
+  role UserRole @default(STANDARD)
+
+  photo_profil String? @db.VarChar(191)
+  bio          String?
+  telephone    String? @db.VarChar(50)
+
+  localisation_id Int
+  localisation    Localisation @relation(fields: [localisation_id], references: [id])
+
+  date_creation     DateTime @default(now())
+  date_modification DateTime @updatedAt
+
+  sessions      Session[]
+  services             Service[]
+  feedbacks            Feedback[]
+  annonces             Annonce[]
+  propositions_annonce PropositionAnnonce[]
+  notifications        Notification[]
+
+  @@index([localisation_id])
+  @@map("users")
+}
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+model Categorie {
+  id Int @id @default(autoincrement())
+
+  nom         String  @db.VarChar(191)
+  description String?
+  icone       String? @db.VarChar(191)
+
+  services Service[]
+  annonces Annonce[]
+
+  @@map("categorie")
 }
 
 model Service {
-  id                Int            @id @default(autoincrement())
-  prestataire_id    Int
-  categorie_id      Int
-  localisation_id   Int?
-  titre             String         @db.VarChar
-  description       String?
-  tarif             Decimal?       @db.Decimal
-  statut            ServiceStatus? @default(EN_ATTENTE)
-  date_creation     DateTime?      @default(now()) @db.Timestamp(6)
-  date_modification DateTime?      @default(now()) @db.Timestamp(6)
-  Feedback          Feedback[]
-  Categorie         Categorie      @relation(fields: [categorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  Localisation      Localisation?  @relation(fields: [localisation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users             users          @relation(fields: [prestataire_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  ServiceImage      ServiceImage[]
+  id Int @id @default(autoincrement())
+
+  prestataire_id Int
+  prestataire    User @relation(fields: [prestataire_id], references: [id])
+
+  categorie_id Int
+  categorie    Categorie @relation(fields: [categorie_id], references: [id])
+
+  localisation_id Int
+  localisation    Localisation @relation(fields: [localisation_id], references: [id])
+
+  titre       String  @db.VarChar(255)
+  description String? @db.Text
+
+  statut ServiceStatus @default(EN_ATTENTE)
+
+  date_creation     DateTime @default(now())
+  date_modification DateTime @updatedAt
+
+  images    ServiceImage[]
+  feedbacks Feedback[]
+
+  @@index([categorie_id])
+  @@index([localisation_id])
+  @@index([statut])
+  @@index([prestataire_id])
+  @@map("service")
 }
 
 model ServiceImage {
-  id         Int     @id @default(autoincrement())
+  id Int @id @default(autoincrement())
+
   service_id Int
-  url_image  String  @db.VarChar
-  ordre      Int?
-  Service    Service @relation(fields: [service_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  service    Service @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
+  url_image String @db.VarChar(255)
+  ordre     Int?
+
+  @@index([service_id])
+  @@map("service_image")
 }
 
-model users {
-  id                 Int                  @id @default(autoincrement())
-  nom                String               @db.VarChar
-  prenom             String?              @db.VarChar
-  email              String               @unique @db.VarChar
-  mot_de_passe       String               @db.VarChar
-  role               UserRole?            @default(STANDARD)
-  photo_profil       String?              @db.VarChar
-  bio                String?
-  telephone          String?              @db.VarChar
-  localisation_id    Int?
-  date_creation      DateTime?            @default(now()) @db.Timestamp(6)
-  date_modification  DateTime?            @default(now()) @db.Timestamp(6)
-  Annonce            Annonce[]
-  Feedback           Feedback[]
-  Notification       Notification[]
-  PropositionAnnonce PropositionAnnonce[]
-  Service            Service[]
-  Localisation       Localisation?        @relation(fields: [localisation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+model Feedback {
+  id Int @id @default(autoincrement())
+
+  service_id Int
+  service    Service @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
+  auteur_id Int
+  auteur    User @relation(fields: [auteur_id], references: [id])
+
+  note        Int?
+  commentaire String? @db.Text
+
+  date_creation DateTime @default(now())
+
+  @@unique([service_id, auteur_id], map: "unique_feedback")
+  @@index([service_id])
+  @@map("feedback")
+}
+
+model Annonce {
+  id Int @id @default(autoincrement())
+
+  demandeur_id Int
+  demandeur    User @relation(fields: [demandeur_id], references: [id])
+
+  categorie_id Int
+  categorie    Categorie @relation(fields: [categorie_id], references: [id])
+
+  localisation_id Int
+  localisation    Localisation @relation(fields: [localisation_id], references: [id])
+
+  titre       String  @db.VarChar(255)
+  description String? @db.Text
+
+  statut AnnonceStatus @default(ACTIVE)
+
+  date_creation   DateTime  @default(now())
+  date_expiration DateTime?
+
+  propositions PropositionAnnonce[]
+
+  @@index([categorie_id])
+  @@index([localisation_id])
+  @@index([demandeur_id])
+  @@map("annonce")
+}
+
+model PropositionAnnonce {
+  id Int @id @default(autoincrement())
+
+  annonce_id Int
+  annonce    Annonce @relation(fields: [annonce_id], references: [id], onDelete: Cascade)
+
+  utilisateur_id Int
+  utilisateur    User @relation(fields: [utilisateur_id], references: [id])
+
+  message String?
+
+  statut PropositionStatus @default(EN_ATTENTE)
+
+  date_creation DateTime @default(now())
+
+  @@index([annonce_id])
+  @@map("proposition_annonce")
+}
+
+model Notification {
+  id Int @id @default(autoincrement())
+
+  user_id Int
+  user    User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  type NotificationType?
+
+  titre   String? @db.VarChar(191)
+  contenu String?
+
+  vu Boolean @default(false)
+
+  date_creation DateTime @default(now())
+
+  @@index([user_id])
+  @@map("notification")
 }
 
 enum AnnonceStatus {
