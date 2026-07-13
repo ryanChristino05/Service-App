@@ -3,6 +3,8 @@
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import type { CategorieResult } from "@/hooks/categorie";
+import type { LocalisationResult } from "@/hooks/useLocalisationSearch";
+import LocalisationPicker from "@/localisation/LocalisationPicker";
 
 interface CreateAnnonceProps {
   userEmail: string;
@@ -17,14 +19,19 @@ export default function CreateAnnonce({ userEmail }: CreateAnnonceProps) {
   const [categories, setCategories] = useState<CategorieResult[]>([]);
   const [categorieInput, setCategorieInput] = useState("");
   const [selectedCategorieId, setSelectedCategorieId] = useState<number | null>(null);
+  const [localisation, setLocalisation] = useState<LocalisationResult | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [localisationPickerKey, setLocalisationPickerKey] = useState(0);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("/api/categories")
-      .then((res) => res.json())
+    fetch("/api/categorie")
+      .then((res) => {
+        if (!res.ok) throw new Error("Erreur serveur");
+        return res.json();
+      })
       .then(setCategories)
       .catch(() => setError("Impossible de charger les catégories"));
   }, []);
@@ -68,12 +75,26 @@ export default function CreateAnnonce({ userEmail }: CreateAnnonceProps) {
     setShowDropdown(true);
   }
 
+  function resetForm() {
+    setFormData({ titre: "", description: "" });
+    setCategorieInput("");
+    setSelectedCategorieId(null);
+    setLocalisation(null);
+    setShowDropdown(false);
+    setLocalisationPickerKey((key) => key + 1);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
     if (!categorieInput.trim()) {
       setError("Merci de choisir ou créer une catégorie.");
+      return;
+    }
+
+    if (!localisation) {
+      setError("Veuillez sélectionner une localisation.");
       return;
     }
 
@@ -85,23 +106,24 @@ export default function CreateAnnonce({ userEmail }: CreateAnnonceProps) {
         email: userEmail,
         categorieId: selectedCategorieId,
         categorieNom: selectedCategorieId ? undefined : categorieInput.trim(),
-        // localisationId: à ajouter selon comment tu gères la localisation
+        localisation,
       };
 
-      const res = await fetch("/api/annonces", {
+      const res = await fetch("/api/annonce", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
+      const contentType = res.headers.get("content-type");
+      const data =
+        contentType?.includes("application/json") ? await res.json() : null;
+
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Erreur lors de la création");
+        throw new Error(data?.error || `Erreur lors de la création (${res.status})`);
       }
 
-      setFormData({ titre: "", description: "" });
-      setCategorieInput("");
-      setSelectedCategorieId(null);
+      resetForm();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
     } finally {
@@ -165,6 +187,11 @@ export default function CreateAnnonce({ userEmail }: CreateAnnonceProps) {
             )}
           </ul>
         )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Localisation</label>
+        <LocalisationPicker key={localisationPickerKey} onChange={setLocalisation} />
       </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}

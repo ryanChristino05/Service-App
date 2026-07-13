@@ -1,4 +1,4 @@
-// app/api/categories/route.ts
+// app/api/categorie/route.ts
 import { NextResponse } from "next/server";
 import { returnCategorie } from "@/hooks/categorie";
 
