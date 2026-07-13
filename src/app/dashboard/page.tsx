@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import CreateAnnonce from "@/components/ui/CreateAnnonce";
 
 const Dashboard = () => {
   const router = useRouter();
@@ -25,10 +26,14 @@ const Dashboard = () => {
           <button onClick={() => signOut({ callbackUrl: "/login" })}>
             Déconnexion
           </button>
+
+          {session.user.email && (
+            <CreateAnnonce userEmail={session.user.email} />
+          )}
         </>
       ) : (
         <Link href="/login">
-          <button>Connexion</button>          
+          <button>Connexion</button>
         </Link>
       )}
     </div>
