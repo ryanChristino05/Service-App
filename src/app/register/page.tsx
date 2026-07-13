@@ -1,5 +1,7 @@
 "use client";
 
+import LocalisationPicker from "@/localisation/LocalisationPicker";
+import { LocalisationResult } from "@/hooks/useLocalisationSearch";
 import { useState } from "react";
 
 export default function Register() {
@@ -8,8 +10,8 @@ export default function Register() {
     prenom: "",
     email: "",
     mot_de_passe: "",
-    localisation_id: "",
   });
+  const [localisation, setLocalisation] = useState<LocalisationResult | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -21,13 +23,18 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (!localisation) {
+      alert("Veuillez sélectionner une localisation.");
+      return;
+    }
+
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, localisation }),
       });
 
       const data = await response.json();
@@ -91,18 +98,11 @@ export default function Register() {
             className="w-full border rounded px-3 py-2"
           />
         </div>
-
         <div>
-          <label className="block mb-1 font-medium">Localisation ID</label>
-          <input
-            type="text"
-            name="localisation_id"
-            value={formData.localisation_id}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
+          <label className="block mb-1 font-medium">Localisation</label>
+          <LocalisationPicker onChange={setLocalisation} />
         </div>
-
+      
         <button
           type="submit"
           className="border rounded px-4 py-2 cursor-pointer"
