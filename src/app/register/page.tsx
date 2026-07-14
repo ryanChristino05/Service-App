@@ -3,8 +3,9 @@
 import LocalisationPicker from "@/localisation/LocalisationPicker";
 import { LocalisationResult } from "@/hooks/useLocalisationSearch";
 import { useState } from "react";
-
+import { useRouter } from "next/navigation";
 export default function Register() {
+    const router = useRouter();
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
@@ -12,6 +13,7 @@ export default function Register() {
     mot_de_passe: "",
   });
   const [localisation, setLocalisation] = useState<LocalisationResult | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -28,6 +30,7 @@ export default function Register() {
       return;
     }
 
+    setSubmitting(true);
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -39,77 +42,123 @@ export default function Register() {
 
       const data = await response.json();
 
-      console.log(data);
-
       if (response.ok) {
         alert("Succès !");
+        router.push("/login");
       } else {
         alert("Erreur : " + data.message);
       }
     } catch (error) {
       console.error(error);
       alert("Impossible de contacter le serveur.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10">
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label className="block mb-1 font-medium">Nom</label>
-          <input
-            type="text"
-            name="nom"
-            value={formData.nom}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
+    <div className="min-h-screen bg-paper flex flex-col">
+      {/* Bandeau de marque */}
+      <div className="bg-brand-900 py-4">
+        <div className="max-w-md mx-auto px-4 flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-accent" />
+          <span className="font-body text-sm font-medium tracking-wide text-paper/90">
+            Trouvez un service près de chez vous
+          </span>
         </div>
+      </div>
 
-        <div>
-          <label className="block mb-1 font-medium">Prénom</label>
-          <input
-            type="text"
-            name="prenom"
-            value={formData.prenom}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
+          <div className="mb-8 text-center">
+            <h1 className="font-display text-3xl text-ink">Créer un compte</h1>
+            <p className="mt-2 font-body text-sm text-ink/60">
+              Rejoignez la communauté et publiez votre premier service.
+            </p>
+          </div>
 
-        <div>
-          <label className="block mb-1 font-medium">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5 bg-paper border border-line rounded-2xl p-6 sm:p-8 shadow-sm"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1.5 font-body text-sm font-medium text-ink">
+                  Nom
+                </label>
+                <input
+                  type="text"
+                  name="nom"
+                  value={formData.nom}
+                  onChange={handleChange}
+                  className="w-full font-body border border-line rounded-lg px-3 py-2.5 text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition"
+                />
+              </div>
 
-        <div>
-          <label className="block mb-1 font-medium">Mot de passe</label>
-          <input
-            type="password"
-            name="mot_de_passe"
-            value={formData.mot_de_passe}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
+              <div>
+                <label className="block mb-1.5 font-body text-sm font-medium text-ink">
+                  Prénom
+                </label>
+                <input
+                  type="text"
+                  name="prenom"
+                  value={formData.prenom}
+                  onChange={handleChange}
+                  className="w-full font-body border border-line rounded-lg px-3 py-2.5 text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block mb-1.5 font-body text-sm font-medium text-ink">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full font-body border border-line rounded-lg px-3 py-2.5 text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1.5 font-body text-sm font-medium text-ink">
+                Mot de passe
+              </label>
+              <input
+                type="password"
+                name="mot_de_passe"
+                value={formData.mot_de_passe}
+                onChange={handleChange}
+                className="w-full font-body border border-line rounded-lg px-3 py-2.5 text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1.5 font-body text-sm font-medium text-ink">
+                Localisation
+              </label>
+              <LocalisationPicker onChange={setLocalisation} />
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full font-body font-semibold rounded-lg px-4 py-2.5 bg-accent text-brand-900 hover:bg-accent/90 active:bg-accent/80 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:ring-offset-2 focus:ring-offset-paper transition disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {submitting ? "Envoi en cours…" : "Créer mon compte"}
+            </button>
+
+            <p className="text-center font-body text-sm text-ink/60">
+              Déjà un compte ?{" "}
+              <a href="/login" className="text-accent hover:underline font-medium">
+                Se connecter
+              </a>
+            </p>
+          </form>
         </div>
-        <div>
-          <label className="block mb-1 font-medium">Localisation</label>
-          <LocalisationPicker onChange={setLocalisation} />
-        </div>
-      
-        <button
-          type="submit"
-          className="border rounded px-4 py-2 cursor-pointer"
-        >
-          Envoyer
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

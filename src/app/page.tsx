@@ -1,11 +1,14 @@
 // app/page.tsx
-import Link from "next/link";
-import { Search, Plus } from "lucide-react";
+import { Search } from "lucide-react";
 import Button from "@/components/ui/Button";
 import ServiceCard from "@/components/ui/ServiceCard";
+import AnnonceModalTrigger from "@/components/ui/AnnonceModalTrigger";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
 export default async function Home() {
+  const session = await auth();
+
   const services = await prisma.service.findMany({
     where: { statut: "VALIDE" },
     include: {
@@ -13,10 +16,10 @@ export default async function Home() {
       localisation: true,
       images: { orderBy: { ordre: "asc" } },
       feedbacks: true,
-      prestataire:true
+      prestataire: true,
     },
     orderBy: { date_creation: "desc" },
-    take: 6, // limite pour la page d'accueil, adapte selon ton besoin
+    take: 6,
   });
 
   return (
@@ -46,13 +49,7 @@ export default async function Home() {
             </button>
           </form>
 
-          <Link
-            href="/annonces/nouvelle"
-            title="Publier une annonce"
-            className="group flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] shadow-lg transition hover:brightness-95"
-          >
-            <Plus className="h-5 w-5 text-[var(--brand-900)] transition group-hover:rotate-90" />
-          </Link>
+          <AnnonceModalTrigger userEmail={session?.user?.email ?? null} />
         </div>
 
         <p className="mt-3 text-xs text-white/50">

@@ -8,14 +8,11 @@ import LocalisationPicker from "@/localisation/LocalisationPicker";
 
 interface CreateAnnonceProps {
   userEmail: string;
+  onSuccess?: () => void;
 }
 
-export default function CreateAnnonce({ userEmail }: CreateAnnonceProps) {
-  const [formData, setFormData] = useState({
-    titre: "",
-    description: "",
-  });
-
+export default function CreateAnnonce({ userEmail, onSuccess }: CreateAnnonceProps) {
+  const [formData, setFormData] = useState({ titre: "", description: "" });
   const [categories, setCategories] = useState<CategorieResult[]>([]);
   const [categorieInput, setCategorieInput] = useState("");
   const [selectedCategorieId, setSelectedCategorieId] = useState<number | null>(null);
@@ -57,9 +54,7 @@ export default function CreateAnnonce({ userEmail }: CreateAnnonceProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   }
 
@@ -92,7 +87,6 @@ export default function CreateAnnonce({ userEmail }: CreateAnnonceProps) {
       setError("Merci de choisir ou créer une catégorie.");
       return;
     }
-
     if (!localisation) {
       setError("Veuillez sélectionner une localisation.");
       return;
@@ -116,14 +110,14 @@ export default function CreateAnnonce({ userEmail }: CreateAnnonceProps) {
       });
 
       const contentType = res.headers.get("content-type");
-      const data =
-        contentType?.includes("application/json") ? await res.json() : null;
+      const data = contentType?.includes("application/json") ? await res.json() : null;
 
       if (!res.ok) {
         throw new Error(data?.error || `Erreur lors de la création (${res.status})`);
       }
 
       resetForm();
+      onSuccess?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
     } finally {
@@ -132,41 +126,41 @@ export default function CreateAnnonce({ userEmail }: CreateAnnonceProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md text-[var(--ink)]">
       <div>
-        <label className="block text-sm font-medium mb-1">Titre</label>
+        <label className="block text-sm font-medium mb-1 text-[var(--ink)]">Titre</label>
         <input
           name="titre"
           value={formData.titre}
           onChange={handleChange}
           required
-          className="w-full border rounded px-3 py-2"
+          className="w-full border border-[var(--line)] rounded px-3 py-2 text-[var(--ink)] placeholder:text-[var(--ink)]/40 bg-white"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Description</label>
+        <label className="block text-sm font-medium mb-1 text-[var(--ink)]">Description</label>
         <textarea
           name="description"
           value={formData.description}
           onChange={handleChange}
-          className="w-full border rounded px-3 py-2"
+          className="w-full border border-[var(--line)] rounded px-3 py-2 text-[var(--ink)] placeholder:text-[var(--ink)]/40 bg-white"
         />
       </div>
 
       <div ref={wrapperRef} className="relative">
-        <label className="block text-sm font-medium mb-1">Catégorie</label>
+        <label className="block text-sm font-medium mb-1 text-[var(--ink)]">Catégorie</label>
         <input
           type="text"
           value={categorieInput}
           onChange={(e) => handleCategorieInputChange(e.target.value)}
           onFocus={() => setShowDropdown(true)}
           placeholder="Choisir ou créer une catégorie"
-          className="w-full border rounded px-3 py-2"
+          className="w-full border border-[var(--line)] rounded px-3 py-2 text-[var(--ink)] placeholder:text-[var(--ink)]/40 bg-white"
         />
 
         {showDropdown && (
-          <ul className="absolute z-10 bg-white border rounded w-full mt-1 max-h-48 overflow-auto shadow">
+          <ul className="absolute z-10 bg-white border border-[var(--line)] rounded w-full mt-1 max-h-48 overflow-auto shadow text-[var(--ink)]">
             {filteredCategories.map((cat) => (
               <li
                 key={cat.id}
@@ -190,7 +184,7 @@ export default function CreateAnnonce({ userEmail }: CreateAnnonceProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Localisation</label>
+        <label className="block text-sm font-medium mb-1 text-[var(--ink)]">Localisation</label>
         <LocalisationPicker key={localisationPickerKey} onChange={setLocalisation} />
       </div>
 
