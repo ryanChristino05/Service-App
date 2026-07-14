@@ -50,9 +50,10 @@ model User {
   annonces             Annonce[]
   propositions_annonce PropositionAnnonce[]
   notifications        Notification[]
-
+  sessions      Session[]
   @@index([localisation_id])
   @@map("users")
+  
 }
 
 model Categorie {
@@ -227,4 +228,11 @@ enum ServiceStatus {
 enum UserRole {
   STANDARD
   PRESTATAIRE
+}
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

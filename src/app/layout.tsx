@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Inter, IBM_Plex_Mono } from "next/font/google";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import SessionProvider from "@/components/providers/sessionProvider";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -34,10 +35,12 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${fraunces.variable} ${inter.variable} ${plexMono.variable}`}>
       <body className="flex min-h-screen flex-col bg-[var(--paper)] font-[var(--font-body)] text-[var(--ink)]">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </body>
+    <SessionProvider>
+      <Header />
+      <main className="flex-1">{children}</main>
+      <Footer />
+    </SessionProvider>
+</body>
     </html>
   );
 }
