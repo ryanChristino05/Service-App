@@ -1,3 +1,4 @@
+// src/app/api/localisation/search/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { searchAddress } from "@/lib/nominatim/client";
 
