@@ -2,12 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-type Localisation = {
-  id: number;
-  ville: string;
-  quartier: string | null;
-};
+import LocalisationPicker from "@/localisation/LocalisationPicker";
+import { LocalisationResult } from "@/hooks/useLocalisationSearch";
 
 type User = {
   nom: string;
@@ -20,12 +16,10 @@ type User = {
 
 export default function ProfileForm({
   user,
-  localisations,
   onSuccess,
   onCancel,
 }: {
   user: User;
-  localisations: Localisation[];
   onSuccess: () => void;
   onCancel: () => void;
 }) {
@@ -35,7 +29,7 @@ export default function ProfileForm({
   const [prenom, setPrenom] = useState(user.prenom ?? "");
   const [telephone, setTelephone] = useState(user.telephone ?? "");
   const [bio, setBio] = useState(user.bio ?? "");
-  const [localisationId, setLocalisationId] = useState(String(user.localisation_id));
+  const [localisation, setLocalisation] = useState<LocalisationResult | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(user.photo_profil);
 
@@ -61,7 +55,9 @@ export default function ProfileForm({
     formData.append("prenom", prenom);
     formData.append("telephone", telephone);
     formData.append("bio", bio);
-    formData.append("localisation_id", localisationId);
+    if (localisation) {
+      formData.append("localisation", JSON.stringify(localisation));
+    }
     if (avatarFile) formData.append("avatar", avatarFile);
 
     try {
@@ -165,23 +161,15 @@ export default function ProfileForm({
               />
             </label>
 
-            <label className="block">
+            <div>
               <span className="mb-1.5 block font-[var(--font-mono)] text-xs uppercase tracking-wider text-[var(--ink)]/50">
-                Ville
+                Ville / adresse
               </span>
-              <select
-                value={localisationId}
-                onChange={(e) => setLocalisationId(e.target.value)}
-                className="w-full rounded-lg border border-[var(--line)] bg-white p-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
-              >
-                {localisations.map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.ville}
-                    {loc.quartier ? ` (${loc.quartier})` : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <LocalisationPicker onChange={setLocalisation} />
+              <p className="mt-1.5 text-xs text-[var(--ink)]/40">
+                Laisse vide pour garder ta localisation actuelle.
+              </p>
+            </div>
           </div>
         </div>
 

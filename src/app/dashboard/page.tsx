@@ -1,8 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Plus } from "lucide-react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { CURRENT_USER_ID } from "@/lib/mock-session";
+import { auth } from "@/lib/auth";
 
 const statutStyles: Record<string, string> = {
   VALIDE: "bg-green-100 text-green-700",
@@ -17,13 +19,28 @@ const statutLabels: Record<string, string> = {
 };
 
 export default async function DashboardPage() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  const store = await cookies();
+  const viewMode = store.get("view-mode")?.value ?? "standard";
+
+  if (viewMode !== "prestataire") {
+    redirect("/");
+  }
+
+  const currentUserId = Number(session.user.id);
+
   const prestataire = await prisma.user.findUnique({
-    where: { id: CURRENT_USER_ID },
+    where: { id: currentUserId },
     include: { localisation: true },
   });
 
   const services = await prisma.service.findMany({
-    where: { prestataire_id: CURRENT_USER_ID },
+    where: { prestataire_id: currentUserId },
     include: {
       categorie: true,
       localisation: true,

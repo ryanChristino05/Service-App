@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navLinks } from "@/lib/nav-links";
-import { CURRENT_USER_ROLE } from "@/lib/mock-session";
+// après
+import { useViewMode } from "@/context/ViewModeContext";
 
 function BrushUnderline() {
   return (
@@ -32,9 +33,10 @@ export default function Navbar({
   className?: string;
 }) {
   const pathname = usePathname();
+  const { viewMode } = useViewMode();
 
   const visibleLinks = navLinks.filter(
-    (link) => !link.roles || link.roles.includes(CURRENT_USER_ROLE)
+    (link) => !link.prestataireOnly || viewMode === "prestataire"
   );
 
   return (

@@ -30,7 +30,7 @@ export default function LoginForm() {
     if (result?.error) {
       setError("Email ou mot de passe incorrect.");
     } else {
-      router.push("/dashboard");
+      router.push("/");
     }
   };
 

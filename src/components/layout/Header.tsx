@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Navbar from "./Navbar";
 import ProfileMenu from "./ProfileMenu";
+import { signOut } from "next-auth/react";
 
 function LogoMark() {
   return (
@@ -94,19 +95,16 @@ export default function Header() {
       >
         Mon profil
       </Link>
-      <Link
-        href="/parametres"
-        onClick={() => setOpen(false)}
-        className="text-sm font-medium text-white/70 hover:text-white"
-      >
-        Paramètres
-      </Link>
+      
       <button
-        onClick={() => setOpen(false)}
+        onClick={() => {
+          setOpen(false);
+          signOut({ callbackUrl: "/login" });
+        }}
         className="text-left text-sm font-medium text-red-300 hover:text-red-200"
       >
         Déconnexion
-      </button>
+</button>
     </div>
   </div>
 )}

@@ -60,9 +60,9 @@ export default function ProfileEditor({
           }`}
         >
           {isEditing ? (
+            // juste supprimer le prop localisations partout où ProfileForm est appelé
             <ProfileForm
               user={userForForm}
-              localisations={localisations}
               onSuccess={handleSuccess}
               onCancel={() => switchTo(false)}
             />

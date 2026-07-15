@@ -2,12 +2,35 @@ import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/prisma";
-import { CURRENT_USER_ID } from "@/lib/mock-session";
+import { auth } from "@/lib/auth";
+
+const userSelect = {
+  id: true,
+  nom: true,
+  prenom: true,
+  email: true,
+  telephone: true,
+  bio: true,
+  photo_profil: true,
+  role: true,
+  localisation_id: true,
+  date_creation: true,
+  date_modification: true,
+  localisation: {
+    select: { id: true, ville: true, quartier: true, adresse: true },
+  },
+} as const;
 
 export async function GET() {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  }
+  const currentUserId = Number(session.user.id);
+
   const user = await prisma.user.findUnique({
-    where: { id: CURRENT_USER_ID },
-    include: { localisation: true },
+    where: { id: currentUserId },
+    select: userSelect,
   });
 
   if (!user) {
@@ -18,13 +41,19 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  }
+  const currentUserId = Number(session.user.id);
+
   const formData = await request.formData();
 
   const nom = formData.get("nom") as string | null;
   const prenom = formData.get("prenom") as string | null;
   const telephone = formData.get("telephone") as string | null;
   const bio = formData.get("bio") as string | null;
-  const localisationIdRaw = formData.get("localisation_id") as string | null;
+  const localisationRaw = formData.get("localisation") as string | null;
   const avatar = formData.get("avatar") as File | null;
 
   if (!nom || nom.trim() === "") {
@@ -49,24 +78,52 @@ export async function PUT(request: Request) {
     await mkdir(uploadDir, { recursive: true });
 
     const ext = avatar.type === "image/png" ? "png" : avatar.type === "image/webp" ? "webp" : "jpg";
-    const filename = `user-${CURRENT_USER_ID}-${Date.now()}.${ext}`;
+    const filename = `user-${currentUserId}-${Date.now()}.${ext}`;
     await writeFile(path.join(uploadDir, filename), buffer);
 
     photo_profil = `/uploads/avatars/${filename}`;
   }
 
+  let newLocalisationId: number | undefined;
+
+  if (localisationRaw) {
+    try {
+      const loc = JSON.parse(localisationRaw) as {
+        latitude: number;
+        longitude: number;
+        ville: string;
+        quartier?: string;
+        adresse?: string;
+      };
+
+      const created = await prisma.localisation.create({
+        data: {
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          ville: loc.ville,
+          quartier: loc.quartier || null,
+          adresse: loc.adresse || null,
+        },
+      });
+
+      newLocalisationId = created.id;
+    } catch {
+      return NextResponse.json({ error: "Localisation invalide" }, { status: 400 });
+    }
+  }
+
   try {
     const user = await prisma.user.update({
-      where: { id: CURRENT_USER_ID },
+      where: { id: currentUserId },
       data: {
         nom: nom.trim(),
         prenom: prenom?.trim() || null,
         telephone: telephone?.trim() || null,
         bio: bio?.trim() || null,
-        ...(localisationIdRaw ? { localisation_id: Number(localisationIdRaw) } : {}),
+        ...(newLocalisationId ? { localisation_id: newLocalisationId } : {}),
         ...(photo_profil ? { photo_profil } : {}),
       },
-      include: { localisation: true },
+      select: userSelect,
     });
 
     return NextResponse.json(user);

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { CURRENT_USER_ID } from "@/lib/mock-session";
+import { auth } from "@/lib/auth";
 import ProfileEditor from "@/components/profile/ProfileEditor";
 import type { User } from "@/generated/prisma/client";
 
@@ -15,10 +15,33 @@ type UserForForm = Pick<
 >;
 
 export default async function ProfilePage() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  const currentUserId = Number(session.user.id);
+
   const [user, localisations] = await Promise.all([
     prisma.user.findUnique({
-      where: { id: CURRENT_USER_ID },
-      include: { localisation: true },
+      where: { id: currentUserId },
+      select: {
+        id: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        telephone: true,
+        bio: true,
+        photo_profil: true,
+        role: true,
+        localisation_id: true,
+        date_creation: true,
+        date_modification: true,
+        localisation: {
+          select: { id: true, ville: true, quartier: true, adresse: true },
+        },
+      },
     }),
     prisma.localisation.findMany({
       select: { id: true, ville: true, quartier: true },

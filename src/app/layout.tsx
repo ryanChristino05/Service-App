@@ -1,8 +1,8 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Fraunces, Inter, IBM_Plex_Mono } from "next/font/google";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import SessionProvider from "@/components/providers/sessionProvider";
+import RootLayoutWrapper from "@/components/RootLayoutWrapper";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -29,18 +29,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="fr" className={`${fraunces.variable} ${inter.variable} ${plexMono.variable}`}>
       <body className="flex min-h-screen flex-col bg-[var(--paper)] font-[var(--font-body)] text-[var(--ink)]">
-    <SessionProvider>
-      <Header />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </SessionProvider>
-</body>
+        <SessionProvider>
+          <RootLayoutWrapper>{children}</RootLayoutWrapper>
+        </SessionProvider>
+      </body>
     </html>
   );
 }

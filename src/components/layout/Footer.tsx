@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { CURRENT_USER_ROLE } from "@/lib/mock-session";
+import { useState } from "react";
+import { useViewMode } from "@/hooks/useViewMode";
 
 const categories = [
   { label: "Plomberie", slug: "plomberie" },
@@ -32,25 +35,27 @@ const socials = [
   },
 ];
 
+const languages = [
+  { code: "FR", label: "Français" },
+  { code: "MG", label: "Malagasy" },
+] as const;
+
 export default function Footer() {
-  const isPrestataire = CURRENT_USER_ROLE === "PRESTATAIRE";
+  const { viewMode } = useViewMode();
+  const isPrestataire = viewMode === "prestataire";
+  const [lang, setLang] = useState<"FR" | "MG">("FR");
+  const year = new Date().getFullYear();
 
   return (
     <footer className="border-t-2 border-[var(--accent)] bg-[var(--brand-900)] text-white/70">
-      {/* Bannière CTA — masquée si l'utilisateur est déjà prestataire */}
+      {/* Bannière CTA — masquée si l'utilisateur est déjà en mode prestataire */}
       {!isPrestataire && (
         <div className="border-b border-white/10">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-6 sm:flex-row">
             <p className="text-sm text-white">
               Vous êtes prestataire ?{" "}
-              <span className="text-white/60">Faites-vous connaître dès aujourd'hui.</span>
+              <span className="text-white/60">Faites-vous connaître dès aujourd&apos;hui.</span>
             </p>
-            <Link
-              href="/devenir-prestataire"
-              className="rounded-full bg-[var(--accent)] px-5 py-2 text-sm font-medium text-[var(--brand-900)] transition hover:opacity-90"
-            >
-              Devenir prestataire
-            </Link>
           </div>
         </div>
       )}
@@ -129,13 +134,23 @@ export default function Footer() {
           <h3 className="mb-3 font-[var(--font-mono)] text-xs uppercase tracking-wider text-white/50">
             Langue
           </h3>
-          <div className="flex gap-2 text-sm">
-            <button className="rounded-full bg-white/10 px-3 py-1 transition hover:bg-[var(--accent)] hover:text-[var(--brand-900)]">
-              FR
-            </button>
-            <button className="rounded-full bg-white/10 px-3 py-1 transition hover:bg-[var(--accent)] hover:text-[var(--brand-900)]">
-              MG
-            </button>
+          <div className="flex gap-2 text-sm" role="group" aria-label="Choix de la langue">
+            {languages.map(({ code, label }) => (
+              <button
+                key={code}
+                type="button"
+                onClick={() => setLang(code)}
+                aria-pressed={lang === code}
+                title={label}
+                className={`rounded-full px-3 py-1 transition ${
+                  lang === code
+                    ? "bg-[var(--accent)] text-[var(--brand-900)]"
+                    : "bg-white/10 hover:bg-white/20"
+                }`}
+              >
+                {code}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -143,7 +158,7 @@ export default function Footer() {
       {/* Bas de page */}
       <div className="border-t border-white/10 px-6 py-4">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-xs sm:flex-row">
-          <span>© 2026 Local Services — Tous droits réservés</span>
+          <span>© {year} Local Services — Tous droits réservés</span>
           <div className="flex gap-4">
             <Link href="/mentions-legales" className="hover:text-[var(--accent)]">
               Mentions légales
