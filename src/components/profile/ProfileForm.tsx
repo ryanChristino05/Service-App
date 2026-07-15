@@ -21,9 +21,13 @@ type User = {
 export default function ProfileForm({
   user,
   localisations,
+  onSuccess,
+  onCancel,
 }: {
   user: User;
   localisations: Localisation[];
+  onSuccess: () => void;
+  onCancel: () => void;
 }) {
   const router = useRouter();
 
@@ -70,6 +74,7 @@ export default function ProfileForm({
 
       setStatus("success");
       router.refresh();
+      onSuccess();
     } catch (err) {
       setStatus("error");
       setErrorMessage(err instanceof Error ? err.message : "Une erreur est survenue");
@@ -81,15 +86,10 @@ export default function ProfileForm({
       onSubmit={handleSubmit}
       className="rounded-2xl border border-[var(--line)] bg-white p-8 shadow-sm"
     >
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8">
         <h2 className="font-[var(--font-display)] text-xl font-semibold text-[var(--ink)]">
           Modifier le profil
         </h2>
-        {status === "success" && (
-          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-            Enregistré
-          </span>
-        )}
       </div>
 
       {/* Photo */}
@@ -222,9 +222,14 @@ export default function ProfileForm({
         >
           {status === "saving" ? "Enregistrement..." : "Enregistrer"}
         </button>
-        {status === "success" && (
-          <span className="text-sm text-green-700">Profil mis à jour avec succès.</span>
-        )}
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={status === "saving"}
+          className="rounded-lg px-6 py-3 text-sm font-medium text-[var(--ink)]/60 transition hover:bg-[var(--paper)] disabled:opacity-50"
+        >
+          Annuler
+        </button>
       </div>
     </form>
   );

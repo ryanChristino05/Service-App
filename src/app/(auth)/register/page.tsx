@@ -1,6 +1,6 @@
 "use client";
 
-import LocalisationPicker from "@/localisation/LocalisationPicker";
+import LocalisationPicker from "@/components/localisation/LocalisationPicker";
 import { LocalisationResult } from "@/hooks/useLocalisationSearch";
 import { useState } from "react";
 
