@@ -3,7 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Mail, Phone, MapPin, Megaphone, Briefcase } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-
+import { auth } from "@/lib/auth";
+import AnnonceOwnerActions from "@/components/profile/AnnonceOwnerActions";
 const annonceStatutStyles: Record<string, string> = {
   ACTIVE: "bg-[var(--accent-soft)] text-[var(--brand-900)]",
   EN_COURS: "bg-[var(--line)] text-[var(--ink)]",
@@ -28,6 +29,8 @@ export default async function PublicProfilePage({
   if (Number.isNaN(userId)) {
     notFound();
   }
+  const session = await auth();
+  const isOwner = session?.user ? Number(session.user.id) === userId : false;
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -317,52 +320,41 @@ export default async function PublicProfilePage({
           <div className="space-y-3">
 
 
-            {annonces.map((a) => (
+        {annonces.map((a) => (
+  <div
+    key={a.id}
+    className="flex items-center justify-between gap-3 rounded-xl border border-[var(--line)] bg-white p-4 transition hover:border-[var(--accent)]"
+  >
+    <Link href={`/annonces/${a.id}`} className="min-w-0 flex-1">
+      <span className="font-[var(--font-mono)] text-xs uppercase tracking-wider text-[var(--ink)]/40">
+        {a.categorie.nom}
+      </span>
+      <h3 className="truncate font-medium text-[var(--ink)]">{a.titre}</h3>
+      <p className="truncate text-xs text-[var(--ink)]/50">
+        {a.localisation.ville}
+        {a.localisation.quartier ? `, ${a.localisation.quartier}` : ""}
+      </p>
+    </Link>
 
-              <Link
-                key={a.id}
-                href={`/annonces/${a.id}`}
-                className="flex items-center justify-between rounded-xl border border-[var(--line)] bg-white p-4 transition hover:border-[var(--accent)]"
-              >
-
-
-                <div className="min-w-0">
-
-                  <span className="font-[var(--font-mono)] text-xs uppercase tracking-wider text-[var(--ink)]/40">
-                    {a.categorie.nom}
-                  </span>
-
-
-                  <h3 className="truncate font-medium text-[var(--ink)]">
-                    {a.titre}
-                  </h3>
-
-
-                  <p className="truncate text-xs text-[var(--ink)]/50">
-
-                    {a.localisation.ville}
-
-                    {a.localisation.quartier
-                      ? `, ${a.localisation.quartier}`
-                      : ""}
-
-                  </p>
-
-
-                </div>
-
-
-
-                <span
-                  className={`shrink-0 rounded-full px-2.5 py-1 font-[var(--font-mono)] text-[10px] uppercase tracking-wider ${annonceStatutStyles[a.statut]}`}
-                >
-                  {a.statut}
-                </span>
-
-
-              </Link>
-
-            ))}
+    <div className="flex shrink-0 items-center gap-2">
+      <span
+        className={`rounded-full px-2.5 py-1 font-[var(--font-mono)] text-[10px] uppercase tracking-wider ${annonceStatutStyles[a.statut]}`}
+      >
+        {a.statut}
+      </span>
+      {isOwner && (
+  <AnnonceOwnerActions
+    annonce={{
+      id: a.id,
+      titre: a.titre,
+      description: a.description,
+      statut: a.statut,
+    }}
+  />
+)}
+    </div>
+  </div>
+))}
 
 
           </div>

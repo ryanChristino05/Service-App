@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 export default async function ServiceDetailPage({
@@ -17,7 +18,9 @@ export default async function ServiceDetailPage({
   const service = await prisma.service.findUnique({
     where: { id: serviceId },
     include: {
-      prestataire: true,
+      prestataire: {
+        select: { id: true, nom: true, prenom: true, telephone: true, photo_profil: true },
+      },
       categorie: true,
       localisation: true,
       images: { orderBy: { ordre: "asc" } },
@@ -67,11 +70,25 @@ export default async function ServiceDetailPage({
 
       <p className="mt-6 whitespace-pre-line text-[var(--ink)]/80">{service.description}</p>
 
-      <div className="mt-8 flex items-center gap-3 rounded-2xl border border-[var(--line)] p-5">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-900)] text-lg font-semibold text-white">
-          {service.prestataire.prenom?.[0]}
-          {service.prestataire.nom[0]}
-        </span>
+      <Link
+        href={`/profils/${service.prestataire.id}`}
+        className="mt-8 flex items-center gap-3 rounded-2xl border border-[var(--line)] p-5 transition hover:border-[var(--accent)]"
+      >
+        {service.prestataire.photo_profil ? (
+          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full">
+            <Image
+              src={service.prestataire.photo_profil}
+              alt={service.prestataire.nom}
+              fill
+              className="object-cover"
+            />
+          </div>
+        ) : (
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--brand-900)] text-lg font-semibold text-white">
+            {service.prestataire.prenom?.[0]}
+            {service.prestataire.nom[0]}
+          </span>
+        )}
         <div>
           <p className="font-medium text-[var(--ink)]">
             {service.prestataire.prenom} {service.prestataire.nom}
@@ -80,7 +97,7 @@ export default async function ServiceDetailPage({
             <p className="text-sm text-[var(--ink)]/60">{service.prestataire.telephone}</p>
           )}
         </div>
-      </div>
+      </Link>
     </section>
   );
 }

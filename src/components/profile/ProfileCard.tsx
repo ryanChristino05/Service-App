@@ -6,6 +6,7 @@ import { MapPin, Mail, Briefcase, Megaphone, BadgeCheck } from "lucide-react";
 import { useViewMode } from "@/context/ViewModeContext";
 
 type User = {
+  id: number;
   nom: string;
   prenom: string | null;
   email: string;
@@ -78,7 +79,7 @@ export default function ProfileCard({ user }: { user: User }) {
           </Link>
         ) : (
           <Link
-            href="/annonces"
+            href={`/profils/${user.id}`}
             className="mt-6 flex items-center justify-center gap-2 rounded-lg bg-[var(--brand-900)] py-2.5 text-sm font-medium text-white transition hover:bg-[var(--brand-700)]"
           >
             <Megaphone className="h-4 w-4" />
