@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Mail, Briefcase, Megaphone, BadgeCheck } from "lucide-react";
+import { useViewMode } from "@/context/ViewModeContext";
 
 type User = {
   nom: string;
@@ -17,8 +20,9 @@ const roleLabels: Record<string, string> = {
 };
 
 export default function ProfileCard({ user }: { user: User }) {
+  const { viewMode } = useViewMode();
   const initials = `${user.prenom?.[0] ?? ""}${user.nom[0]}`.toUpperCase();
-  const isPrestataire = user.role === "PRESTATAIRE";
+  const isPrestataire = viewMode === "prestataire";
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white shadow-sm">

@@ -16,14 +16,19 @@ const statutLabels: Record<string, string> = {
 };
 
 export default async function AnnoncesPage() {
-  const annonces = await prisma.annonce.findMany({
-    include: {
-      demandeur: true,
-      categorie: true,
-      localisation: true,
+const annonces = await prisma.annonce.findMany({
+  where: {
+    statut: { notIn: ["RESOLUE","EXPIREE"] },
+  },
+  include: {
+    demandeur: {
+      select: { id: true, nom: true, prenom: true, email: true },
     },
-    orderBy: { date_creation: "desc" },
-  });
+    categorie: true,
+    localisation: true,
+  },
+  orderBy: { date_creation: "desc" },
+});
 
   return (
     <section className="mx-auto max-w-4xl px-6 py-16">
@@ -53,11 +58,7 @@ export default async function AnnoncesPage() {
                 </p>
               </div>
 
-              <span
-                className={`shrink-0 rounded-full px-3 py-1 font-[var(--font-mono)] text-xs uppercase tracking-wider ${statutStyles[a.statut]}`}
-              >
-                {statutLabels[a.statut]}
-              </span>
+            
             </div>
           </Link>
         ))}

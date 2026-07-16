@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { ArrowLeft,Mail, Lock } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -35,32 +37,38 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-paper flex flex-col">
-      {/* Bandeau de marque */}
-      <div className="bg-brand-900 py-4">
-        <div className="max-w-md mx-auto px-4 flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-accent" />
-          <span className="font-body text-sm font-medium tracking-wide text-paper/90">
-            Trouvez un service près de chez vous
-          </span>
-        </div>
-      </div>
+    <div className="flex min-h-screen flex-col bg-[var(--paper)]">
+       <div className="px-4 pt-4">
+    <Link
+      href="/"
+      className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--ink)]/60 transition hover:text-[var(--accent)]"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      Retour à l&apos;accueil
+    </Link>
+  </div>
 
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
+      <div className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
-            <h1 className="font-display text-3xl text-ink">Connexion</h1>
-            <p className="mt-2 font-body text-sm text-ink/60">
+            <h1 className="font-[var(--font-display)] text-3xl font-semibold text-[var(--ink)]">
+              Connexion
+            </h1>
+            <p className="mt-2 text-sm text-[var(--ink)]/60">
               Ravi de vous revoir. Connectez-vous à votre compte.
             </p>
           </div>
 
           <form
             onSubmit={handleSubmit}
-            className="space-y-5 bg-paper border border-line rounded-2xl p-6 sm:p-8 shadow-sm"
+            className="space-y-5 rounded-2xl border border-[var(--line)] bg-white p-6 shadow-sm sm:p-8"
           >
             <div>
-              <label htmlFor="email" className="block mb-1.5 font-body text-sm font-medium text-ink">
+              <label
+                htmlFor="email"
+                className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-[var(--ink)]"
+              >
+                <Mail className="h-3.5 w-3.5 text-[var(--accent)]" />
                 Email
               </label>
               <input
@@ -69,13 +77,18 @@ export default function LoginForm() {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
+                required
                 placeholder="vous@exemple.com"
-                className="w-full font-body border border-line rounded-lg px-3 py-2.5 text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition"
+                className="w-full rounded-lg border border-[var(--line)] px-3 py-2.5 text-[var(--ink)] placeholder:text-[var(--ink)]/40 outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block mb-1.5 font-body text-sm font-medium text-ink">
+              <label
+                htmlFor="password"
+                className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-[var(--ink)]"
+              >
+                <Lock className="h-3.5 w-3.5 text-[var(--accent)]" />
                 Mot de passe
               </label>
               <input
@@ -84,26 +97,29 @@ export default function LoginForm() {
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
+                required
                 placeholder="Entrez votre mot de passe"
-                className="w-full font-body border border-line rounded-lg px-3 py-2.5 text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition"
+                className="w-full rounded-lg border border-[var(--line)] px-3 py-2.5 text-[var(--ink)] placeholder:text-[var(--ink)]/40 outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
               />
             </div>
 
             {error && (
-              <p className="text-center font-body text-sm text-red-600">{error}</p>
+              <p className="rounded-lg bg-red-50 px-4 py-2.5 text-center text-sm text-red-600">
+                {error}
+              </p>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full font-body font-semibold rounded-lg px-4 py-2.5 bg-accent text-brand-900 hover:bg-accent/90 active:bg-accent/80 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:ring-offset-2 focus:ring-offset-paper transition disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full cursor-pointer rounded-lg bg-[var(--accent)] px-4 py-2.5 font-semibold text-[var(--brand-900)] transition hover:brightness-95 active:brightness-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Connexion…" : "Se connecter"}
             </button>
 
-            <p className="text-center font-body text-sm text-ink/60">
+            <p className="text-center text-sm text-[var(--ink)]/60">
               Pas encore de compte ?{" "}
-              <a href="/register" className="text-accent hover:underline font-medium">
+              <a href="/register" className="font-medium text-[var(--accent)] hover:underline">
                 Créer un compte
               </a>
             </p>

@@ -1,17 +1,47 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Search, Plus } from "lucide-react";
+import { Search } from "lucide-react";
 import Button from "@/components/ui/Button";
-import ServiceCard from "@/components/ui/ServiceCard";
-import { mockServices } from "@/lib/mock-data";
+import ServiceCard, { MockService } from "@/components/ui/ServiceCard";
+import AnnonceModalTrigger from "@/components/ui/AnnonceModalTrigger";
+import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
 export default async function Home() {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/register");
+    redirect("/login");
   }
+
+  const rawServices = await prisma.service.findMany({
+    where: { statut: "VALIDE" },
+    include: {
+      categorie: true,
+      localisation: { select: { ville: true, quartier: true } },
+      prestataire: { select: { nom: true, prenom: true } },
+      images: { orderBy: { ordre: "asc" }, take: 1 },
+      feedbacks: { select: { note: true } },
+    },
+    orderBy: { date_creation: "desc" },
+    take: 6,
+  });
+
+  const services: MockService[] = rawServices.map((s) => {
+    const notes = s.feedbacks.map((f) => f.note).filter((n): n is number => typeof n === "number");
+    const noteMoyenne = notes.length > 0 ? notes.reduce((a, b) => a + b, 0) / notes.length : null;
+
+    return {
+      id: s.id,
+      titre: s.titre,
+      categorie: s.categorie?.nom ?? "Autre",
+      ville: s.localisation?.ville ?? "",
+      quartier: s.localisation?.quartier ?? "",
+      image: s.images[0]?.url_image ?? "/placeholder-service.jpg",
+      prestataire: `${s.prestataire.prenom ?? ""} ${s.prestataire.nom}`.trim(),
+      noteMoyenne,
+    };
+  });
 
   return (
     <div>
@@ -40,13 +70,7 @@ export default async function Home() {
             </button>
           </form>
 
-          <Link
-            href="/annonces/nouvelle"
-            title="Publier une annonce"
-            className="group flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] shadow-lg transition hover:brightness-95"
-          >
-            <Plus className="h-5 w-5 text-[var(--brand-900)] transition group-hover:rotate-90" />
-          </Link>
+          <AnnonceModalTrigger userEmail={session.user.email ?? null} />
         </div>
 
         <p className="mt-3 text-xs text-white/50">
@@ -65,11 +89,19 @@ export default async function Home() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {mockServices.map((service) => (
-            <ServiceCard key={service.id} service={service} />
-          ))}
-        </div>
+        {services.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-[var(--line)] p-8 text-center text-sm text-[var(--ink)]/50">
+            Aucun service disponible pour l&apos;instant.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((service) => (
+              <Link key={service.id} href={`/services/${service.id}`}>
+                <ServiceCard service={service} />
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

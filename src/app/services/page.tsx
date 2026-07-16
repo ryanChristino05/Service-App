@@ -98,11 +98,7 @@ export default async function ServicesPage({
                     className="object-cover transition group-hover:scale-105"
                   />
                 )}
-                <span
-                  className={`absolute right-3 top-3 rounded-full px-3 py-1 font-[var(--font-mono)] text-xs uppercase tracking-wider ${statutStyles[s.statut]}`}
-                >
-                  {statutLabels[s.statut]}
-                </span>
+                
               </div>
 
               <div className="p-4">

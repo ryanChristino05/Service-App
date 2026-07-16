@@ -24,7 +24,7 @@ export default async function ServiceDetailPage({
     },
   });
 
-  if (!service || service.statut !== "VALIDE") {
+  if (!service) {
     notFound();
   }
 
