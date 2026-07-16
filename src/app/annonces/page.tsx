@@ -75,11 +75,7 @@ export default async function AnnoncesPage() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <span
-            className={`rounded-full px-3 py-1 font-[var(--font-mono)] text-xs uppercase tracking-wider ${statutStyles[a.statut]}`}
-          >
-            {statutLabels[a.statut]}
-          </span>
+          
           {isOwner && (
             <AnnonceOwnerActions
               annonce={{

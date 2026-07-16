@@ -1,22 +1,18 @@
-// components/ui/AnnonceModalTrigger.tsx
+// components/ui/ServiceModalTrigger.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X } from "lucide-react";
-import CreateAnnonce from "@/components/ui/CreateAnnonce";
 import CreateService from "@/components/ui/CreateService";
-import { useViewMode } from "@/context/ViewModeContext";
 
-interface AnnonceModalTriggerProps {
+interface ServiceModalTriggerProps {
   userEmail: string | null;
 }
 
-export default function AnnonceModalTrigger({ userEmail }: AnnonceModalTriggerProps) {
+export default function ServiceModalTrigger({ userEmail }: ServiceModalTriggerProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const { viewMode } = useViewMode();
-  const isPrestataire = viewMode === "prestataire";
 
   function handleClick() {
     if (!userEmail) {
@@ -26,14 +22,12 @@ export default function AnnonceModalTrigger({ userEmail }: AnnonceModalTriggerPr
     setOpen(true);
   }
 
-  const title = isPrestataire ? "Publier un service" : "Publier une annonce";
-
   return (
     <>
       <button
         type="button"
         onClick={handleClick}
-        title={title}
+        title="Publier un service"
         className="group flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] shadow-lg transition hover:brightness-95"
       >
         <Plus className="h-5 w-5 text-[var(--brand-900)] transition group-hover:rotate-90" />
@@ -58,14 +52,10 @@ export default function AnnonceModalTrigger({ userEmail }: AnnonceModalTriggerPr
             </button>
 
             <h2 className="mb-4 font-[var(--font-display)] text-xl font-semibold text-[var(--ink)]">
-              {title}
+              Publier un service
             </h2>
 
-            {isPrestataire ? (
-              <CreateService onSuccess={() => setOpen(false)} />
-            ) : (
-              <CreateAnnonce userEmail={userEmail} onSuccess={() => setOpen(false)} />
-            )}
+            <CreateService onSuccess={() => setOpen(false)} />
           </div>
         </div>
       )}

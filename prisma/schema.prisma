@@ -85,7 +85,7 @@ model Service {
   description String? @db.Text
 
 
-  statut ServiceStatus @default(EN_ATTENTE)
+  statut ServiceStatus @default(VALIDE)
 
   date_creation     DateTime @default(now())
   date_modification DateTime @updatedAt

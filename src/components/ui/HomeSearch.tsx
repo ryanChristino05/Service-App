@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Search, Loader2 } from "lucide-react";
 import ServiceCard, { MockService } from "@/components/ui/ServiceCard";
+import AnnonceModalTrigger from "@/components/ui/AnnonceModalTrigger";
 
 type RawSearchResult = {
   id: number;
@@ -27,7 +28,13 @@ function mapToServiceCard(s: RawSearchResult): MockService {
   };
 }
 
-export default function HomeSearch({ defaultServices }: { defaultServices: MockService[] }) {
+export default function HomeSearch({
+  defaultServices,
+  userEmail,
+}: {
+  defaultServices: MockService[];
+  userEmail: string | null;
+}) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MockService[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -62,27 +69,31 @@ export default function HomeSearch({ defaultServices }: { defaultServices: MockS
 
   return (
     <>
-      <form
-        onSubmit={handleSubmit}
-        className="mx-auto mt-8 flex max-w-lg flex-1 items-center overflow-hidden rounded-full bg-white pl-5 shadow-lg"
-      >
-        <Search className="h-4 w-4 shrink-0 text-[var(--ink)]/40" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher un service (ex: plombier)"
-          className="flex-1 bg-transparent px-3 py-3 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--ink)]/40"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex items-center gap-1.5 whitespace-nowrap bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--brand-900)] transition hover:brightness-95 disabled:opacity-60"
+      <div className="mx-auto mt-8 flex max-w-lg items-center gap-3 px-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-1 items-center overflow-hidden rounded-full bg-white pl-5 shadow-lg"
         >
-          {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          Rechercher
-        </button>
-      </form>
+          <Search className="h-4 w-4 shrink-0 text-[var(--ink)]/40" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Rechercher un service (ex: plombier)"
+            className="flex-1 bg-transparent px-3 py-3 text-sm text-[var(--ink)] outline-none placeholder:text-[var(--ink)]/40"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex items-center gap-1.5 whitespace-nowrap bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--brand-900)] transition hover:brightness-95 disabled:opacity-60"
+          >
+            {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            Rechercher
+          </button>
+        </form>
+
+        <AnnonceModalTrigger userEmail={userEmail} />
+      </div>
 
       <section className="mx-auto max-w-7xl px-6 py-14">
         <div className="mb-8 flex items-center justify-between">

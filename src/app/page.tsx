@@ -61,7 +61,6 @@ export default async function Home() {
         </p>
       </section>
 
-      <HomeSearch defaultServices={defaultServices} />
-    </div>
+<HomeSearch defaultServices={defaultServices} userEmail={session.user.email ?? null} />    </div>
   );
 }

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `service` MODIFY `statut` ENUM('EN_ATTENTE', 'VALIDE', 'REFUSE') NOT NULL DEFAULT 'VALIDE';
