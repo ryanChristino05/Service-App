@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import type { CategorieResult } from "@/hooks/categorie";
+import type { CategorieResult } from "@/hooks/Categorie";
 import type { LocalisationResult } from "@/hooks/useLocalisationSearch";
 import LocalisationPicker from "@/localisation/LocalisationPicker";
 
